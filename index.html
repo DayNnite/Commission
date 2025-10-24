@@ -1,118 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Weekly Commission Report</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --bg:#0f172a; --card:#111827; --ink:#e5e7eb; --muted:#9ca3af; --accent:#38bdf8; }
-    html,body{height:100%}
-    body{
-      margin:0; background:linear-gradient(135deg,#0b1220,#0f172a);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial;
-      color:var(--ink); display:grid; place-items:center; padding:24px;
-    }
-    .card{
-      width:min(720px,92vw); background:rgba(17,24,39,.85);
-      backdrop-filter: blur(6px); border:1px solid rgba(148,163,184,.12);
-      border-radius:20px; padding:28px 28px 24px; box-shadow:0 10px 30px rgba(0,0,0,.35);
-    }
-    h1{margin:0 0 6px; font-size:clamp(24px,4vw,32px); font-weight:700; letter-spacing:.2px}
-    p{margin:.35rem 0 0; line-height:1.6}
-    .muted{color:var(--muted)}
-    .grid{display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:18px}
-    .pill{
-      border:1px dashed rgba(148,163,184,.25); border-radius:14px; padding:12px 14px;
-      display:flex; justify-content:space-between; align-items:baseline; background:rgba(255,255,255,.02)
-    }
-    .pill b{font-size:clamp(18px,3.2vw,22px)}
-    .label{font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted)}
-    .big{font-size:clamp(18px,3.2vw,20px)}
-    .accent{color:var(--accent)}
-    footer{margin-top:14px; font-size:12px; color:var(--muted)}
+    body { font-family: Arial, sans-serif; padding: 20px; }
   </style>
 </head>
 <body>
-  <script>
-    // --- Inputs ---
-    var username = prompt("Enter your name for the report:", "Joan's Teammate");
-    if (username === null || username.trim() === "") { username = "Salesperson"; }
+<script>
+  // Get name
+  var username = prompt("Enter your name for the report:", "Salesperson");
+  if (username.trim() === "") username = "Salesperson";
 
-    var subtotal = 0;
-    var input, trimmed, amount;
-
-    // Posttest loop with 'Done' sentinel
-    do {
-      input = prompt("Enter sale amount (e.g., 123.45) or type Done to finish:");
-      if (input === null) { // Treat Cancel as Done for convenience, but 'Done' is the official sentinel
-        trimmed = "Done";
-      } else {
-        trimmed = input.trim();
-      }
-
-      if (/^done$/i.test(trimmed)) {
-        // exit on sentinel
-      } else {
-        amount = parseFloat(trimmed);
-        if (!isNaN(amount) && amount >= 0) {
-          subtotal += amount;
-        } else {
-          alert("Please enter a non-negative number like 123.45, or type Done to finish.");
-        }
-      }
-    } while (!/^done$/i.test(trimmed));
-
-    // --- Commission rate decision structure ---
-    var rate = 0;
-    if (subtotal <= 0) {
-      rate = 0;
-    } else if (subtotal < 500) {
-      rate = 0.05;
-    } else if (subtotal < 1000) {
-      rate = 0.10;
-    } else {
-      rate = 0.15;
+  // Posttest loop with 'Done' sentinel
+  var subtotal = 0, raw, val;
+  do {
+    raw = prompt("Enter the dollar amount for your sales a single sale at a time.  Enter Done when you are finished.");
+    if (!/^done$/i.test(raw.trim())) {
+      val = parseFloat(raw);
+      if (!isNaN(val) && val >= 0) subtotal += val;
+      else alert("Please enter a non-negative number (e.g., 123.45) or type Done.");
     }
+  } while (!/^done$/i.test(raw.trim()));
 
-    // --- Calculations ---
-    var commission = subtotal * rate;
-    var totalEarnings = subtotal + commission;
+  // Determine commission rate
+  var rate = 0;
+  if (subtotal <= 0)       rate = 0.00;
+  else if (subtotal < 500) rate = 0.05;
+  else if (subtotal < 1000)rate = 0.10;
+  else                     rate = 0.15;
 
-    // Zero rule if subtotal is zero (already handled by rate 0, but explicit keeps intent clear)
-    if (subtotal === 0) {
-      rate = 0;
-      commission = 0;
-      totalEarnings = 0;
-    }
+  // Calculate totals
+  var commission = subtotal * rate;
+  var total = subtotal + commission;
+  if (subtotal === 0) { rate = 0; commission = 0; total = 0; }
 
-    // --- Formatting (no user-defined functions, just methods) ---
-    var subtotalUSD = subtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    var commissionUSD = commission.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    var totalUSD = totalEarnings.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    var ratePct = (rate * 100).toFixed(2) + "%";
+  // Format values
+  var money = { style: 'currency', currency: 'USD' };
+  var subtotalUSD = subtotal.toLocaleString('en-US', money);
+  var commissionUSD = commission.toLocaleString('en-US', money);
+  var totalUSD = total.toLocaleString('en-US', money);
+  var ratePct = (rate * 100).toFixed(2) + "%";
 
-    // --- Single output statement (document.write) ---
-    document.write(
-      '<div class="card">' +
-        '<h1>Hello ' + username.replace(/</g,"&lt;").replace(/>/g,"&gt;") + ', Here is your Weekly Commission Report.</h1>' +
-        '<p class="muted">Thanks for logging your sales. Your summary is below.</p>' +
-
-        '<div class="grid">' +
-          '<div class="pill"><span class="label">Sales Total</span><b>' + subtotalUSD + '</b></div>' +
-          '<div class="pill"><span class="label">Commission Rate</span><b>' + ratePct + '</b></div>' +
-          '<div class="pill"><span class="label">Total Commission</span><b>' + commissionUSD + '</b></div>' +
-          '<div class="pill"><span class="label">Total Earnings</span><b class="accent">' + totalUSD + '</b></div>' +
-        '</div>' +
-
-        '<p class="big" style="margin-top:18px;">Your sales total is <b>' + subtotalUSD +
-        '</b>, so your commission rate is <b>' + ratePct + '</b>.<br />' +
-        'Your total commission is <b>' + commissionUSD + '</b>.<br />' +
-        'Your total earnings are <b>' + totalUSD + '</b>.</p>' +
-
-        '<footer>Remember to also upload your logic sketch (jpg/gif/png/svg) with this submission.</footer>' +
-      '</div>'
-    );
-  </script>
+  // One output statement
+  document.write(
+    "<h1>Hello " + username + ", Here is your Weekly Commission Report.</h1>" +
+    "<p>Your sales total is " + subtotalUSD + ", so your commission rate is " + ratePct + "</p>" +
+    "<p>Your total commission is " + commissionUSD + ".</p>" +
+    "<p>Your total earnings are " + totalUSD + "</p>" +
+    "<p><small>Do not forget to upload the required design sketches of the application logic. (jpg, gif, png, svg only)</small></p>"
+  );
+</script>
 </body>
 </html>
-
